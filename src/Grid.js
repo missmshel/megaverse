@@ -6,49 +6,48 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 /* Final solution. Does encounter occasional "Rate limit exceeded. Retrying in 2 seconds..." message, but still accurately generates the map solution */
 class Grid {
   constructor(api) {
-      this.api = api;
+    this.api = api;
   }
 
   async createFromGoalMap() {
+    // Step 1: Fetch the goal map to determine the grid requirements
+    const goalMapResponse = await this.api.getGoalMap();
+    if (!goalMapResponse || !goalMapResponse.goal) {
+      console.error('Unable to fetch the goal map!');
+      return;
+    }
 
-      // Step 1: Fetch the goal map to determine the grid requirements
-      const goalMapResponse = await this.api.getGoalMap();
-      if (!goalMapResponse || !goalMapResponse.goal) {
-          console.error('Unable to fetch the goal map!');
-          return;
+    const goalMap = goalMapResponse.goal;
+    const numRows = goalMap.length;
+    const numCols = goalMap[0]?.length || 0;
+
+    // Step 2: Iterate over the goal map and determine which entities to create
+    let entitiesToCreate = [];
+    for (let row = 0; row < numRows; row++) {
+      for (let column = 0; column < numCols; column++) {
+        const cell = goalMap[row][column];
+
+        if (cell === 'POLYANET') {
+          entitiesToCreate.push(new Polyanet(row, column));
+        } else if (cell.endsWith('_SOLOON')) {
+            const color = cell.split('_')[0].toLowerCase(); // Extract the color
+            entitiesToCreate.push(new Soloon(row, column, color));
+        } else if (cell.endsWith('_COMETH')) {
+            const direction = cell.split('_')[0].toLowerCase(); // Extract the direction
+            entitiesToCreate.push(new Cometh(row, column, direction));
+        }
       }
+    }
 
-      const goalMap = goalMapResponse.goal;
-      const numRows = goalMap.length;
-      const numCols = goalMap[0]?.length || 0;
+    // Step 3: Process the creation of entities in batches
+    const batchSize = 5; // Number of requests to send at once
+    const delayBetweenBatches = 750; // 750 ms delay between batches
 
-      const batchSize = 5; // Number of requests to send at once
-      const delayBetweenBatches = 1000; // 500 ms delay between batches
+    await processInBatches(entitiesToCreate, batchSize, delayBetweenBatches, async (entity) => {
+      await entity.create(this.api);
+    });
 
-      // Step 2: Iterate over the goal map and determine which entities to create
-      let entitiesToCreate = [];
-      for (let row = 0; row < numRows; row++) {
-          for (let column = 0; column < numCols; column++) {
-              const cell = goalMap[row][column];
-
-              if (cell === 'POLYANET') {
-                  entitiesToCreate.push(new Polyanet(row, column));
-              } else if (cell.endsWith('_SOLOON')) {
-                  const color = cell.split('_')[0].toLowerCase(); // Extract the color
-                  entitiesToCreate.push(new Soloon(row, column, color));
-              } else if (cell.endsWith('_COMETH')) {
-                  const direction = cell.split('_')[0].toLowerCase(); // Extract the direction
-                  entitiesToCreate.push(new Cometh(row, column, direction));
-              }
-          }
-      }
-
-      // Step 3: Process the creation of entities in batches
-      await processInBatches(entitiesToCreate, batchSize, delayBetweenBatches, async (entity) => {
-          await entity.create(this.api);
-      });
-
-      console.log('Goal map megaverse created successfully.');
+    console.log('Goal map megaverse created successfully.');
   }
 }
 
@@ -69,71 +68,6 @@ async function processInBatches(items, batchSize, delay, callback) {
       await sleep(delay); // delay between batches
   }
 }
-
-/* ~~  Alternate Phase 2 solution. This is the tortoise solution. Takes its time with a controlled loop with delay. Accurately generates map solution, but time cost isn't worth it. ~~
-
-
-class Grid {
-    constructor(api) {
-        this.api = api;
-    }
-
-    async createFromGoalMap() {
-        // Step 1: Fetch the goal map to determine the grid requirements
-        const goalMapResponse = await this.api.getGoalMap();
-        if (!goalMapResponse || !goalMapResponse.goal) {
-            console.error('Unable to fetch the goal map!');
-            return;
-        }
-
-        const goalMap = goalMapResponse.goal;
-        const numRows = goalMap.length;
-        const numCols = goalMap[0]?.length || 0;
-
-        // Step 2: Iterate over the goal map and create entities sequentially
-        for (let row = 0; row < numRows; row++) {
-            for (let column = 0; column < numCols; column++) {
-                const cell = goalMap[row][column];
-                try {
-                    await this.createEntityFromCell(cell, row, column);
-                    await sleep(500); // Delay between creating each entity to avoid rate limits
-                } catch (error) {
-                    console.error(`Failed to create entity at row ${row}, column ${column}: ${error.message}`);
-                }
-            }
-        }
-
-        console.log('Goal map megaverse created successfully.');
-    }
-
-    // Method to determine which entity to create based on the cell content
-    async createEntityFromCell(cell, row, column) {
-        if (cell === 'POLYANET') {
-            const polyanet = new Polyanet(row, column);
-            await polyanet.create(this.api);
-        } else if (cell.endsWith('_SOLOON')) {
-            // Extract the color from the cell
-            const color = cell.split('_')[0].toLowerCase();
-            if (Soloon.COLOR_OPTIONS.includes(color)) {
-                const soloon = new Soloon(row, column, color);
-                await soloon.create(this.api);
-            } else {
-                console.warn(`Invalid Soloon color "${color}" at row ${row}, column ${column}`);
-            }
-        } else if (cell.endsWith('_COMETH')) {
-            // Extract the direction from the cell
-            const direction = cell.split('_')[0].toLowerCase();
-            if (Cometh.DIRECTION_OPTIONS.includes(direction)) {
-                const cometh = new Cometh(row, column, direction);
-                await cometh.create(this.api);
-            } else {
-                console.warn(`Invalid Cometh direction "${direction}" at row ${row}, column ${column}`);
-            }
-        }
-    }
-}
-
-*/
 
 /*  ~~ Original Phase 1 manual coded solution. Prior to writing out the goalMap functionality ~~
 

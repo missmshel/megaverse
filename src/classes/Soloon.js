@@ -1,7 +1,7 @@
 // import AstralObject class
 const AstralObject = require('./AstralObject');
 
-// Subclass of AstralObject for POLYanets
+// Subclass of AstralObject for SOLoons
 class Soloon extends AstralObject {
     static COLOR_OPTIONS = ['blue', 'red', 'purple', 'white']
 
@@ -13,8 +13,20 @@ class Soloon extends AstralObject {
         this.color = color;
     }
 
+    toApiData() {
+        return {
+            row: this.row,
+            column: this.column,
+            color: this.color,
+        };
+    }
+
     async create(api) {
-        return api.postSoloon(this.row, this.column, this.color);
+        return api.postShape('soloons', this.toApiData());
+    }
+
+    async delete(api) {
+        return await api.deleteShape('soloons', this.row, this.column);
     }
 };
 

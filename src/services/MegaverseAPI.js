@@ -9,122 +9,62 @@ class MegaverseAPI {
         this.nodeEnv = process.env.NODE_ENV || 'production';
     }
 
-    // Polyanet POST and DELETE 
-    async postPolyanet(row, column, retries = 3) {
-        
-        // Simulate success in dev mode for Phase 1
+    // Generic POST method for creating entity (Cometh, Polyanet, or Soloon)
+    async postShape(shape, data, retries = 3) {
+        // Simulate success in dev mode
         if (this.nodeEnv === 'development') {
-            console.log(` [DEV MODE] Polyanet created at row ${row}, column ${column}`);
+            console.log(` [DEV MODE] ${shape} created at row ${data.row}, column ${data.column}`);
             return;
         }
 
+        const url = `${this.megaURL}${shape}`;
+
         try {
-            const response = await axios.post(`${this.megaURL}polyanets`, {
-                candidateId: this.candidateId,
-                row,
-                column,
-            }, {
-                maxRedirects: 5,
-            });
-            console.log(`Polyanet created at row ${row}, column ${column}`);
+        console.log(`Attempting to create ${shape} with data:`, data);
+            const response = await axios.post(
+                url,
+                {   
+                    candidateId: this.candidateId,
+                    ...data
+                },
+                {
+                    maxRedirects: 5,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+            console.log(`${shape} created successfully at row ${data.row}, column ${data.column}`);
         } catch (error) {
             if (error.response && error.response.status === 429 && retries > 0) {
-                console.error(`Rate limit exceeded. Retrying in 2 seconds...`);
+                console.error(`Rate limit exceeded for ${shape}. Retrying in 2 seconds...`);
                 await sleep(2000); // Wait for 2 seconds before retrying
-                return this.postPolyanet(row, column, retries - 1);
-              } else {
-                console.error('Error creating Polyanet:', error.message);
-              }
-        }
-    } 
-
-    async deletePolyanet(row, column) {
-        try {
-            const response = await axios.delete(`${this.megaURL}poyanets`, {
-                candidateId: this.candidateId,
-                row,
-                column,
-            });
-            console.log(`Polyanet deleted at row ${row}, column ${column}`);
-        } catch (error) {
-            console.error('Error deleting Polyanet:', error.message);
-        }
-    }
-
-    // Soloon POST and DELETE
-    async postSoloon(row, column, color, retries = 3) {
-        try {
-            const response = await axios.post(`${this.megaURL}soloons`, {
-                candidateId: this.candidateId,
-                row,
-                column,
-                color,
-            }, {
-                maxRedirects: 5,
-            });
-            console.log(`${color} Soloon created at row ${row}, column ${column}`);
-        } catch (error) {
-            if (error.response && error.response.status === 429 && retries > 0) {
-                console.error(`Rate limit exceeded. Retrying in 2 seconds...`);
-                await sleep(2000); // Wait for 2 seconds before retrying
-                return this.postSoloon(row, column, color, retries - 1);
-              } else {
-                console.error('Error creating Polyanet:', error.message);
-              }
-        }
-    } 
-
-    async deleteSoloon(row, column) {
-        try {
-            const response = await axios.delete(`${this.megaURL}soloons`, {
-                candidateId: this.candidateId,
-                row,
-                column,
-            });
-            console.log(`Soloon deleted at row ${row}, column ${column}`);
-        } catch (error) {
-            console.error('Error deleting Polyanet:', error.message);
-        }
-    }
-
-
-    // Cometh POST and DELETE
-    async postCometh(row, column, direction, retries = 3) {
-        try {
-            const response = await axios.post(`${this.megaURL}comeths`, {
-                candidateId: this.candidateId,
-                row,
-                column,
-                direction
-            }, {
-                maxRedirects: 5,
-            });
-            console.log(`Cometh created at row ${row}, column ${column} facing ${direction}`);
-        } catch (error) {
-            if (error.response && error.response.status === 429 && retries > 0) {
-              console.error(`Rate limit exceeded. Retrying in 2 seconds...`);
-              await sleep(2000); // Wait for 2 seconds before retrying
-              return this.postCometh(row, column, direction, retries - 1);
+                return this.postShape(shape, data, retries - 1);
+            } else if (error.response && error.response.status === 400) {
+                console.error(`400 Bad Request for ${shape}: Check if the data is properly formatted. Row: ${data.row}, Column: ${data.column}, Details:`, data);
             } else {
-              console.error('Error creating Polyanet:', error.message);
+                console.error(`Error creating ${shape}:`, error.message);
             }
         }
     } 
 
-    async deleteCometh(row, column) {
+    // Generic DELETE method for deleting any entity (Cometh, Polyanet, Soloon)
+    async deleteShape(shape, row, column) {
         try {
-            const response = await axios.delete(`${this.megaURL}comeths`, {
-                candidateId: this.candidateId,
-                row,
-                column,
+            const response = await axios.delete(`${this.megaURL}${shape}`, {
+                data: {
+                    candidateId: this.candidateId,
+                    row,
+                    column,
+                }
             });
-            console.log(`Cometh deleted at row ${row}, column ${column}`);
+            console.log(`${shape} deleted at row ${row}, column ${column}`);
         } catch (error) {
-            console.error('Error deleting Cometh:', error.message);
+            console.error(`Error deleting ${shape}:`, error.message);
         }
     }
-
-    // Goal Map call
+        
+    // Goal Map call to fetch goal map object
     async getGoalMap() {
         try {
           const response = await axios.get(`${this.megaURL}map/${this.candidateId}/goal`);
