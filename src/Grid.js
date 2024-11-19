@@ -8,88 +8,47 @@ class Grid {
         this.api = api;
     }
 
-    // async createFromGoalMap() {
-    //     const goalMap = await this.api.getGoalMap();
-
-    //     if (!goalMap) {
-    //         console.error('Unable to fetch the goal map!');
-    //         return;
-    //     }
-
-    //     // Determine the megaverse groalMap grid dimensions
-    //     const numMapRows = goalMap.length;
-    //     const numMapColumns = goalMap[0]?.length || 0;
-
-    //     console.log(`Goal Map dimensions: ${numMapRows} rows by ${numMapColumns} columns`);
-
-    //     // Iterate over each cell of the goalMap
-    //     for (let row = 0; row < numMapRows; row++) {
-    //         for (let column = 0; column <= numMapColumns; column++) {
-    //              const cell = goalMap[row][column];
-
-                 
-
-    //             }
-    //         }
-    //     }
-
-    // }
-
     async createPolyanetCross() {
-        const polyanetCoordinates = [
-            [2, 2], [2, 8],
-            [3, 3], [3, 7],
-            [4, 4], [4, 6],
-            [5, 5], 
-            [6, 4], [6, 6],
-            [7, 3], [7, 7],
-            [8, 2], [8, 8]
-        ];
 
-        const batchSize = 3; // send requests in batches of 3 to avoid overloading system
-        const delayBetweenBatches = 500; // 500 millisecond delaye between batches
+      /* Alternative option for solving Phase 1 Grid problem that isn't reliant on manual coding*/
+      // const goalMapLength = 11;
+      // const goalMapBorderLeft = 1;
+      // const goalMapBorderRight = 9;
 
-        await processInBatches(polyanetCoordinates, batchSize, delayBetweenBatches, async ([row, column]) => {
-            const polyanet = new Polyanet(row, column);
-            await polyanet.create(this.api);
-          });
-      
+      // Iterate over the entire grid to determine placement of polyanets
+      // let polyanetCoordinates = [];
+      // for (let row = 0; row < goalMapLength; row++) {
+      //   for (let column = 0; column < goalMapLength; column++) {
+      //     const rowDiff = row + 1;
+      //     const columnDiff = goalMapLength - column;
+      //     if (row > goalMapBorderLeft && row < goalMapBorderRight) {
+      //       if (row === column || rowDiff === columnDiff) {
+      //           polyanetCoordinates.push([row, column]);
+      //       }
+      //     }
+      //   }
+      // }
+
+      const polyanetCoordinates = [
+        [2, 2], [2, 8],
+        [3, 3], [3, 7],
+        [4, 4], [4, 6],
+        [5, 5], 
+        [6, 4], [6, 6],
+        [7, 3], [7, 7],
+        [8, 2], [8, 8]
+      ];
+
+      const batchSize = 3; // send requests in batches of 3 to avoid overloading system
+      const delayBetweenBatches = 500; // 500 millisecond delaye between batches
+
+      // Process the coordinates in batches to avoid rate limiting
+      await processInBatches(polyanetCoordinates, batchSize, delayBetweenBatches, async ([row, column]) => {
+        const polyanet = new Polyanet(row, column);
+        await polyanet.create(this.api);
+        });  
           console.log('Polyanet cross grid created successfully.');
-        }
-
-        // const goalMap = await this.api.getGoalMap();
-
-        // if (!goalMap) {
-        //     console.error('Unable to fetch the goal map!');
-        //     return;
-        // }
-
-        // // Determine the megaverse groalMap grid dimensions
-        // const numMapRows = goalMap.length;
-        // const numMapColumns = goalMap[0]?.length || 0;
-
-        // console.log(`Goal Map dimensions: ${numMapRows} rows by ${numMapColumns} columns`);
-
-        // // Iterate over each cell of the goalMap
-        // for (let row = 0; row < numMapRows; row++) {
-        //     for (let column = 0; column <= numMapColumns; column++) {
-        //         const cell = goalMap[row][column];
-                
-        //         if (polyanetCoordinates.includes(cell)) {
-        //             const polyanet = new Polyanet(row, column);
-        //             await polyanet.create(this.api)
-        //         }
-
-
-        //         }
-        // }
-        // }
-
-        // for (const [row, column] of polyanetCoordinates) {
-        //     const polyanet = new Polyanet(row, column);
-        //     await polyanet.create(this.api);
-        // }
-    // }
+    }
 }
 
 // Utility function to process requests in batches
@@ -100,8 +59,6 @@ async function processInBatches(items, batchSize, delay, callback) {
     await sleep(delay);
   }
 }
-
-
 
 
 module.exports = Grid;
