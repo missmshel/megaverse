@@ -19,29 +19,29 @@ megaverse-challenge/
 │
 ├── src/
 │   ├── classes/
-│   │   ├── AstralObject.js       # Base class for all astral objects
-│   │   ├── Polyanet.js           # Subclass for Polyanet
-│   │   ├── Soloon.js             # Subclass for Soloon
-│   │   ├── Cometh.js             # Subclass for Cometh
+│   │   ├── AstralObject.js
+│   │   ├── Polyanet.js
+│   │   ├── Soloon.js
+│   │   ├── Cometh.js
 │   │
 │   ├── services/
-│   │   └── MegaverseAPI.js       # Class to handle API interactions
+│   │   └── MegaverseAPI.js
 │   │
-│   ├── Grid.js                   # Class to manage the grid and create shapes
-│   ├── main.js                   # Entry point to orchestrate the process
+│   ├── Grid.js
+│   ├── main.js
 │
 ├── tests/
-│   ├── Cometh.test.js            # Unit tests for Cometh class
-│   ├── Grid.test.js              # Unit tests for Grid shape creation
-│   ├── main.test.js              # Unit tests for entry point processing
-│   ├── MegaverseAPI.test.js      # Unit tests for API interactions
-│   ├── Polyanet.test.js          # Unit tests for Polyanet class
-│   ├── Soloon.test.js            # Unit tests for Soloon class
+│   ├── Cometh.test.js
+│   ├── Grid.test.js
+│   ├── main.test.js
+│   ├── MegaverseAPI.test.js
+│   ├── Polyanet.test.js
+│   ├── Soloon.test.js
 │
-├── .env                          # Environment variables
-├── .gitignore                    # Git ignore file
-├── jest.config.js                # Jest configuration for testing
-└── package.json                  # npm configuration
+├── .env
+├── .gitignore
+├── jest.config.js
+└── package.json
 
 
 ## 🛠️ Tech Stack
