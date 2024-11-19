@@ -14,7 +14,7 @@ class Cometh extends AstralObject {
     }
 
     async create(api) {
-        return api.postSoloon(this.row, this.column, this.direction);
+        return api.postCometh(this.row, this.column, this.direction);
     }
 };
 

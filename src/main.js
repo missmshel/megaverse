@@ -5,6 +5,5 @@ const Grid = require('./Grid');
     const api = new MegaverseAPI();
     const grid = new Grid(api);
 
-    await grid.createPolyanetCross();
-    console.log('Phase 1 complete: Polyanet cross created.');
+    await grid.createFromGoalMap();
 })();
